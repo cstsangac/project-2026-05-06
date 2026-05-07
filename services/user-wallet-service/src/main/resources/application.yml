@@ -1,0 +1,46 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: user-wallet-service
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/gifts}
+    username: ${DB_USER:gifts}
+    password: ${DB_PASSWORD:gifts}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    properties:
+      hibernate:
+        format_sql: false
+    open-in-view: false
+  flyway:
+    enabled: true
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:localhost:9092}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+app:
+  jwt:
+    issuer: demo-user-wallet-service
+    secret: ${JWT_SECRET:please-change-me-in-prod-please-change-me}
+    ttl-seconds: ${JWT_TTL_SECONDS:3600}
+  kafka:
+    topic-gift-sent: ${KAFKA_TOPIC_GIFT_SENT:gift.sent}
+  leaderboard:
+    enabled: ${LEADERBOARD_ENABLED:true}
+
+logging:
+  level:
+    root: INFO
+
