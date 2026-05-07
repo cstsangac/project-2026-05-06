@@ -91,10 +91,14 @@ npx wscat -c \"ws://localhost:8090/ws?streamId=$streamId\"
 Send a gift:
 
 ```powershell
+# Use a unique request id each time. If you reuse the same clientRequestId, the API is idempotent
+# and will NOT emit a new Kafka event or increment the leaderboard again.
+$clientRequestId = [guid]::NewGuid().ToString()
+
 Invoke-RestMethod -Method Post -Uri "http://localhost:8080/api/streams/$streamId/gifts" `
   -Headers @{ Authorization = "Bearer $token" } `
   -ContentType "application/json" `
-  -Body (@{ giftType = "ROSE"; clientRequestId = "req-1" } | ConvertTo-Json)
+  -Body (@{ giftType = "ROSE"; clientRequestId = $clientRequestId } | ConvertTo-Json)
 ```
 
 Leaderboard (optional, Redis):

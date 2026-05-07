@@ -11,6 +11,7 @@ import java.math.RoundingMode;
 import java.time.Instant;
 import java.util.UUID;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -96,7 +97,11 @@ public class GiftService {
             giftType,
             price,
             gift.getCreatedAt());
-    kafkaTemplate.send(topicGiftSent, streamId.toString(), event);
+    try {
+      kafkaTemplate.send(topicGiftSent, streamId.toString(), event).get(5, TimeUnit.SECONDS);
+    } catch (Exception e) {
+      throw new IllegalStateException("Failed to publish gift event to Kafka", e);
+    }
 
     return gift;
   }

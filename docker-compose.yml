@@ -35,6 +35,16 @@ services:
     ports:
       - "9092:9092"
 
+  kafka-init:
+    image: apache/kafka:3.9.0
+    depends_on:
+      kafka:
+        condition: service_started
+    entrypoint: ["/bin/bash","-lc"]
+    command: >
+      "/opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --create --if-not-exists
+      --topic gift.sent --partitions 1 --replication-factor 1 && echo 'kafka-init done'"
+
   user-wallet-service:
     build:
       context: ./services/user-wallet-service
@@ -55,8 +65,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
-      kafka:
-        condition: service_started
+      kafka-init:
+        condition: service_completed_successfully
 
   notification-service-go:
     build:
@@ -65,10 +75,10 @@ services:
       PORT: "8090"
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       KAFKA_TOPIC_GIFT_SENT: gift.sent
-      KAFKA_GROUP_ID: notification-service-go
+      START_FROM_EARLIEST: "false"
     ports:
       - "8090:8090"
     depends_on:
-      kafka:
-        condition: service_started
+      kafka-init:
+        condition: service_completed_successfully
 

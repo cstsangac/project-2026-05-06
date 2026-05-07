@@ -22,7 +22,8 @@ type GiftSentEvent struct {
 	// giftPrice comes from Java BigDecimal and is usually encoded as a JSON number.
 	// Keep it as raw JSON so we can accept both number and string without failing unmarshalling.
 	GiftPrice      json.RawMessage `json:"giftPrice"`
-	SentAt         time.Time `json:"sentAt"`
+	// sentAt may be encoded as string or number depending on producer; keep it raw for demo robustness.
+	SentAt         json.RawMessage `json:"sentAt"`
 }
 
 type Hub struct {
@@ -76,7 +77,6 @@ func main() {
 	port := env("PORT", "8090")
 	kafkaBootstrap := env("KAFKA_BOOTSTRAP_SERVERS", "localhost:9092")
 	topic := env("KAFKA_TOPIC_GIFT_SENT", "gift.sent")
-	groupId := env("KAFKA_GROUP_ID", "notification-service-go")
 
 	hub := NewHub()
 
@@ -115,22 +115,29 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	go consumeAndBroadcast(ctx, kafkaBootstrap, topic, groupId, hub)
+	go consumeAndBroadcast(ctx, kafkaBootstrap, topic, hub)
 
 	log.Printf("notification-service-go listening on :%s (kafka=%s topic=%s)", port, kafkaBootstrap, topic)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
-func consumeAndBroadcast(ctx context.Context, bootstrap, topic, groupId string, hub *Hub) {
+func consumeAndBroadcast(ctx context.Context, bootstrap, topic string, hub *Hub) {
 	r := kafka.NewReader(kafka.ReaderConfig{
-		Brokers:        []string{bootstrap},
-		Topic:          topic,
-		GroupID:        groupId,
-		MinBytes:       1,
-		MaxBytes:       10e6,
-		CommitInterval: time.Second,
+		Brokers:  []string{bootstrap},
+		Topic:    topic,
+		Partition: 0,
+		MinBytes: 1,
+		MaxBytes: 10e6,
 	})
 	defer r.Close()
+
+	// Without consumer groups (time-boxed demo), we manage offsets ourselves.
+	// Start from latest by default; set START_FROM_EARLIEST=true to replay.
+	if env("START_FROM_EARLIEST", "false") == "true" {
+		_ = r.SetOffset(kafka.FirstOffset)
+	} else {
+		_ = r.SetOffset(kafka.LastOffset)
+	}
 
 	for {
 		m, err := r.ReadMessage(ctx)
@@ -142,13 +149,20 @@ func consumeAndBroadcast(ctx context.Context, bootstrap, topic, groupId string, 
 			time.Sleep(time.Second)
 			continue
 		}
-		var evt GiftSentEvent
-		if err := json.Unmarshal(m.Value, &evt); err != nil {
-			log.Printf("bad event json: %v", err)
-			continue
+		// Use Kafka key as streamId to avoid JSON parsing issues and keep this service tiny.
+		// Java producer sends key = streamId (see KafkaTemplate.send(topic, streamId, event)).
+		streamId := string(m.Key)
+		if streamId == "" {
+			// fallback: try parse streamId from JSON, but don't fail the message if it doesn't parse
+			var evt GiftSentEvent
+			if err := json.Unmarshal(m.Value, &evt); err != nil {
+				log.Printf("bad event json (no key): %v", err)
+				continue
+			}
+			streamId = evt.StreamId
 		}
-		// Broadcast the original event JSON to avoid any re-encoding surprises.
-		hub.Broadcast(evt.StreamId, m.Value)
+		log.Printf("kafka message streamId=%s bytes=%d", streamId, len(m.Value))
+		hub.Broadcast(streamId, m.Value)
 	}
 }
 
