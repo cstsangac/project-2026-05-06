@@ -13,12 +13,10 @@ CREATE TABLE wallet (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 
-CREATE TYPE wallet_tx_type AS ENUM ('TOPUP', 'GIFT_DEBIT');
-
 CREATE TABLE wallet_tx (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id UUID NOT NULL REFERENCES app_user(id) ON DELETE CASCADE,
-  tx_type wallet_tx_type NOT NULL,
+  tx_type TEXT NOT NULL CHECK (tx_type IN ('TOPUP', 'GIFT_DEBIT')),
   amount NUMERIC(19,2) NOT NULL CHECK (amount > 0),
   balance_after_amount NUMERIC(19,2) NOT NULL CHECK (balance_after_amount >= 0),
   reference_id TEXT NULL,

@@ -19,7 +19,9 @@ type GiftSentEvent struct {
 	SenderUserId   string    `json:"senderUserId"`
 	SenderUsername string    `json:"senderUsername"`
 	GiftType       string    `json:"giftType"`
-	GiftPrice      string    `json:"giftPrice"`
+	// giftPrice comes from Java BigDecimal and is usually encoded as a JSON number.
+	// Keep it as raw JSON so we can accept both number and string without failing unmarshalling.
+	GiftPrice      json.RawMessage `json:"giftPrice"`
 	SentAt         time.Time `json:"sentAt"`
 }
 
@@ -145,8 +147,8 @@ func consumeAndBroadcast(ctx context.Context, bootstrap, topic, groupId string, 
 			log.Printf("bad event json: %v", err)
 			continue
 		}
-		payload, _ := json.Marshal(evt)
-		hub.Broadcast(evt.StreamId, payload)
+		// Broadcast the original event JSON to avoid any re-encoding surprises.
+		hub.Broadcast(evt.StreamId, m.Value)
 	}
 }
 

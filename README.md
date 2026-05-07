@@ -72,8 +72,16 @@ Invoke-RestMethod -Method Post -Uri "http://localhost:8080/api/wallet/topup" `
 
 Connect a viewer to WebSocket:
 
-- **Option A (browser devtools console)**: open any page and run:
+- **Option A (browser devtools console)**: open `about:blank` (or any local page) and run:
   - `new WebSocket("ws://localhost:8090/ws?streamId=<STREAM_ID>")`
+  - Recommended (logs messages):
+
+```javascript
+const ws = new WebSocket("ws://localhost:8090/ws?streamId=<STREAM_ID>");
+ws.onopen = () => console.log("ws open");
+ws.onmessage = (e) => console.log("ws msg", e.data);
+ws.onerror = (e) => console.log("ws error", e);
+```
 - **Option B (wscat, optional)**:
 
 ```powershell
@@ -93,7 +101,7 @@ Leaderboard (optional, Redis):
 
 ```powershell
 Invoke-RestMethod -Method Get -Uri "http://localhost:8080/api/streams/$streamId/leaderboard" `
-  -Headers @{ Authorization = "Bearer $token" }
+  -Headers @{ Authorization = "Bearer $token" } | ConvertTo-Json -Depth 10
 ```
 
 ## API summary
