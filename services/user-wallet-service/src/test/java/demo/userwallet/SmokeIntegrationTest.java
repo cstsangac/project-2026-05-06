@@ -50,7 +50,7 @@ class SmokeIntegrationTest {
 
   @Test
   void registerTopupSendGift_smoke() {
-    var userId = authService.register("demo-user-" + UUID.randomUUID(), "pw");
+    UUID userId = authService.register("demo-user-" + UUID.randomUUID(), "pw");
     walletService.topUp(userId, new BigDecimal("100.00"), "test-topup");
     giftService.sendGift(userId, UUID.randomUUID(), "ROSE", "req-1");
   }

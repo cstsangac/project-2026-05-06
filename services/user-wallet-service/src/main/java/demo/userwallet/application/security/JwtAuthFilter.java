@@ -24,12 +24,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
   protected void doFilterInternal(
       HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
       throws ServletException, IOException {
-    var auth = request.getHeader(HttpHeaders.AUTHORIZATION);
+    String auth = request.getHeader(HttpHeaders.AUTHORIZATION);
     if (auth != null && auth.startsWith("Bearer ")) {
-      var token = auth.substring("Bearer ".length()).trim();
+      String token = auth.substring("Bearer ".length()).trim();
       try {
-        var principal = jwtService.verify(token);
-        var authentication =
+        JwtPrincipal principal = jwtService.verify(token);
+        UsernamePasswordAuthenticationToken authentication =
             new UsernamePasswordAuthenticationToken(
                 principal, null, List.of(new SimpleGrantedAuthority("ROLE_USER")));
         SecurityContextHolder.getContext().setAuthentication(authentication);

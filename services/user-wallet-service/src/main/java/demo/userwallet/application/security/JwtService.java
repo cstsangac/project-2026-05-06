@@ -1,6 +1,8 @@
 package demo.userwallet.application.security;
 
 import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.Jwt;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.security.Keys;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -26,7 +28,7 @@ public class JwtService {
   }
 
   public String mint(UUID userId, String username) {
-    var now = Instant.now();
+    Instant now = Instant.now();
     return Jwts.builder()
         .issuer(issuer)
         .subject(userId.toString())
@@ -38,15 +40,15 @@ public class JwtService {
   }
 
   public JwtPrincipal verify(String token) {
-    var parsed =
+    Jwt<?, Claims> parsed =
         Jwts.parser()
             .verifyWith(key)
             .requireIssuer(issuer)
             .build()
             .parseSignedClaims(token);
-    var claims = parsed.getPayload();
-    var userId = UUID.fromString(claims.getSubject());
-    var username = claims.get("username", String.class);
+    Claims claims = parsed.getPayload();
+    UUID userId = UUID.fromString(claims.getSubject());
+    String username = claims.get("username", String.class);
     return new JwtPrincipal(userId, username);
   }
 }

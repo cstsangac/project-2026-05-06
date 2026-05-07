@@ -6,7 +6,9 @@ import demo.userwallet.api.wallet.WalletResponses.WalletResponse;
 import demo.userwallet.api.wallet.WalletResponses.WalletTxResponse;
 import demo.userwallet.api.wallet.WalletResponses.WalletWithTxResponse;
 import jakarta.validation.Valid;
-import java.math.BigDecimal;
+import demo.userwallet.infrastructure.jpa.WalletEntity;
+import demo.userwallet.infrastructure.jpa.WalletTxEntity;
+import java.util.List;
 import java.util.UUID;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -26,9 +28,9 @@ public class WalletController {
 
   @GetMapping
   public WalletWithTxResponse getWallet(Authentication authentication) {
-    var principal = (JwtPrincipal) authentication.getPrincipal();
-    var wallet = walletService.getWallet(principal.userId());
-    var tx = walletService.recentTx(principal.userId(), 20);
+    JwtPrincipal principal = (JwtPrincipal) authentication.getPrincipal();
+    WalletEntity wallet = walletService.getWallet(principal.userId());
+    List<WalletTxEntity> tx = walletService.recentTx(principal.userId(), 20);
     return new WalletWithTxResponse(
         new WalletResponse(wallet.getUserId(), wallet.getBalanceAmount(), wallet.getUpdatedAt()),
         tx.stream()
@@ -47,9 +49,9 @@ public class WalletController {
   @PostMapping("/topup")
   public WalletResponse topUp(
       Authentication authentication, @Valid @RequestBody TopUpRequest req) {
-    var principal = (JwtPrincipal) authentication.getPrincipal();
-    var ref = "mock-payment-" + UUID.randomUUID();
-    var wallet = walletService.topUp(principal.userId(), req.amount(), ref);
+    JwtPrincipal principal = (JwtPrincipal) authentication.getPrincipal();
+    String ref = "mock-payment-" + UUID.randomUUID();
+    WalletEntity wallet = walletService.topUp(principal.userId(), req.amount(), ref);
     return new WalletResponse(wallet.getUserId(), wallet.getBalanceAmount(), wallet.getUpdatedAt());
   }
 }

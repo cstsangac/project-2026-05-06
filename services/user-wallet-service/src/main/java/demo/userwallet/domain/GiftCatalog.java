@@ -14,7 +14,7 @@ public final class GiftCatalog {
           "DIAMOND", Money.of("20.00"));
 
   public static BigDecimal price(String giftType) {
-    var price = PRICES.get(giftType);
+    BigDecimal price = PRICES.get(giftType);
     if (price == null) {
       throw new IllegalArgumentException("Unknown giftType: " + giftType);
     }

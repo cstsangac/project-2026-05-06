@@ -39,13 +39,13 @@ public class WalletService {
     if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
       throw new IllegalArgumentException("amount must be > 0");
     }
-    var wallet = getWallet(userId);
-    var newBalance = Money.normalize(wallet.getBalanceAmount().add(amount));
+    WalletEntity wallet = getWallet(userId);
+    BigDecimal newBalance = Money.normalize(wallet.getBalanceAmount().add(amount));
     wallet.setBalanceAmount(newBalance);
     wallet.setUpdatedAt(Instant.now());
     walletRepository.save(wallet);
 
-    var tx = new WalletTxEntity();
+    WalletTxEntity tx = new WalletTxEntity();
     tx.setId(UUID.randomUUID());
     tx.setUserId(userId);
     tx.setTxType(WalletTxType.TOPUP);
@@ -64,16 +64,16 @@ public class WalletService {
     if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
       throw new IllegalArgumentException("amount must be > 0");
     }
-    var wallet = getWallet(userId);
+    WalletEntity wallet = getWallet(userId);
     if (wallet.getBalanceAmount().compareTo(amount) < 0) {
       throw new IllegalArgumentException("Insufficient balance");
     }
-    var newBalance = Money.normalize(wallet.getBalanceAmount().subtract(amount));
+    BigDecimal newBalance = Money.normalize(wallet.getBalanceAmount().subtract(amount));
     wallet.setBalanceAmount(newBalance);
     wallet.setUpdatedAt(Instant.now());
     walletRepository.save(wallet);
 
-    var tx = new WalletTxEntity();
+    WalletTxEntity tx = new WalletTxEntity();
     tx.setId(UUID.randomUUID());
     tx.setUserId(userId);
     tx.setTxType(WalletTxType.GIFT_DEBIT);

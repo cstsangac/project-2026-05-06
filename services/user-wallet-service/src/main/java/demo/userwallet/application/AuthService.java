@@ -33,14 +33,14 @@ public class AuthService {
     if (userRepository.findByUsername(username).isPresent()) {
       throw new ConflictException("Username already exists");
     }
-    var user = new AppUserEntity();
+    AppUserEntity user = new AppUserEntity();
     user.setId(UUID.randomUUID());
     user.setUsername(username);
     user.setPasswordHash(passwordEncoder.encode(password));
     user.setCreatedAt(Instant.now());
     userRepository.save(user);
 
-    var wallet = new WalletEntity();
+    WalletEntity wallet = new WalletEntity();
     wallet.setUserId(user.getId());
     wallet.setBalanceAmount(BigDecimal.ZERO.setScale(Money.SCALE));
     wallet.setUpdatedAt(Instant.now());
@@ -50,7 +50,7 @@ public class AuthService {
   }
 
   public String login(String username, String password) {
-    var user =
+    AppUserEntity user =
         userRepository.findByUsername(username).orElseThrow(() -> new IllegalArgumentException("Bad credentials"));
     if (!passwordEncoder.matches(password, user.getPasswordHash())) {
       throw new IllegalArgumentException("Bad credentials");

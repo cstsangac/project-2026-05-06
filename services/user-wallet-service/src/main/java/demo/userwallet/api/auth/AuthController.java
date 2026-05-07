@@ -20,13 +20,13 @@ public class AuthController {
 
   @PostMapping("/register")
   public RegisterResponse register(@Valid @RequestBody RegisterRequest req) {
-    var userId = authService.register(req.username().trim(), req.password());
+    java.util.UUID userId = authService.register(req.username().trim(), req.password());
     return new RegisterResponse(userId);
   }
 
   @PostMapping("/login")
   public LoginResponse login(@Valid @RequestBody LoginRequest req) {
-    var token = authService.login(req.username().trim(), req.password());
+    String token = authService.login(req.username().trim(), req.password());
     return new LoginResponse(token, "Bearer");
   }
 }

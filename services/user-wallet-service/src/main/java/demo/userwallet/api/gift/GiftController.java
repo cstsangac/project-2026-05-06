@@ -25,8 +25,8 @@ public class GiftController {
       Authentication authentication,
       @PathVariable UUID streamId,
       @Valid @RequestBody SendGiftRequest req) {
-    var principal = (JwtPrincipal) authentication.getPrincipal();
-    var gift =
+    JwtPrincipal principal = (JwtPrincipal) authentication.getPrincipal();
+    demo.userwallet.infrastructure.jpa.GiftEventEntity gift =
         giftService.sendGift(
             principal.userId(), streamId, req.giftType().trim().toUpperCase(), req.clientRequestId());
     return new SendGiftResponse(
