@@ -147,3 +147,19 @@ docker builder prune -f
 docker system prune -f
 ```
 
+Or run the helper script:
+
+```powershell
+# Safe default: stop only
+.\scripts\cleanup.ps1
+
+# Also prune build cache
+.\scripts\cleanup.ps1 -PruneBuilderCache
+
+# Also prune build cache + unused images/containers/networks
+.\scripts\cleanup.ps1 -PruneBuilderCache -PruneSystem
+
+# Also delete volumes (only if you add volumes later)
+.\scripts\cleanup.ps1 -RemoveVolumes
+```
+
