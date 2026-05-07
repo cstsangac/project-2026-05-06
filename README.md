@@ -8,18 +8,9 @@ Microservices-style interview demo for **live streaming + gaming-style engagemen
 
 ## Architecture
 
-```mermaid
-flowchart LR
-  Client[Client / Viewer] -->|REST + JWT| UWS[user-wallet-service\nSpring Boot]
-  Client -->|WebSocket /ws?streamId=...| NS[notification-service-go\nGolang]
+![Architecture diagram](docs/architecture.png)
 
-  UWS -->|SQL| PG[(PostgreSQL)]
-  UWS -->|ZINCRBY (optional)| R[(Redis)]
-  UWS -->|produce gift.sent| K[(Kafka)]
-
-  NS -->|consume gift.sent| K
-  NS -->|broadcast JSON| Client
-```
+Mermaid source lives in `docs/architecture.mmd`.
 
 ## Quickstart (local)
 
