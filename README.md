@@ -29,6 +29,13 @@ Services:
 - `user-wallet-service`: `http://localhost:8080`
 - `notification-service-go`: `http://localhost:8090`
 
+Health checks (PowerShell):
+
+```powershell
+Invoke-RestMethod http://localhost:8080/actuator/health
+Invoke-RestMethod http://localhost:8090/health
+```
+
 ## Demo flow (REST + WebSocket)
 
 Pick a stream id:
