@@ -47,26 +47,27 @@ $streamId = [guid]::NewGuid().ToString()
 Register:
 
 ```powershell
-curl -s http://localhost:8080/api/auth/register ^
-  -H "Content-Type: application/json" ^
-  -d "{\"username\":\"demo\",\"password\":\"pw\"}"
+Invoke-RestMethod -Method Post -Uri "http://localhost:8080/api/auth/register" `
+  -ContentType "application/json" `
+  -Body (@{ username = "demo"; password = "pw" } | ConvertTo-Json)
 ```
 
 Login (grab token):
 
 ```powershell
-$token = (curl -s http://localhost:8080/api/auth/login `
-  -H "Content-Type: application/json" `
-  -d '{\"username\":\"demo\",\"password\":\"pw\"}' | ConvertFrom-Json).accessToken
+$token = (Invoke-RestMethod -Method Post -Uri "http://localhost:8080/api/auth/login" `
+  -ContentType "application/json" `
+  -Body (@{ username = "demo"; password = "pw" } | ConvertTo-Json)
+).accessToken
 ```
 
 Top up wallet:
 
 ```powershell
-curl -s http://localhost:8080/api/wallet/topup `
-  -H "Authorization: Bearer $token" `
-  -H "Content-Type: application/json" `
-  -d "{\"amount\":100.00}"
+Invoke-RestMethod -Method Post -Uri "http://localhost:8080/api/wallet/topup" `
+  -Headers @{ Authorization = "Bearer $token" } `
+  -ContentType "application/json" `
+  -Body (@{ amount = 100.00 } | ConvertTo-Json)
 ```
 
 Connect a viewer to WebSocket:
@@ -82,17 +83,17 @@ npx wscat -c \"ws://localhost:8090/ws?streamId=$streamId\"
 Send a gift:
 
 ```powershell
-curl -s http://localhost:8080/api/streams/$streamId/gifts `
-  -H "Authorization: Bearer $token" `
-  -H "Content-Type: application/json" `
-  -d "{\"giftType\":\"ROSE\",\"clientRequestId\":\"req-1\"}"
+Invoke-RestMethod -Method Post -Uri "http://localhost:8080/api/streams/$streamId/gifts" `
+  -Headers @{ Authorization = "Bearer $token" } `
+  -ContentType "application/json" `
+  -Body (@{ giftType = "ROSE"; clientRequestId = "req-1" } | ConvertTo-Json)
 ```
 
 Leaderboard (optional, Redis):
 
 ```powershell
-curl -s http://localhost:8080/api/streams/$streamId/leaderboard `
-  -H "Authorization: Bearer $token"
+Invoke-RestMethod -Method Get -Uri "http://localhost:8080/api/streams/$streamId/leaderboard" `
+  -Headers @{ Authorization = "Bearer $token" }
 ```
 
 ## API summary
