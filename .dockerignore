@@ -1,0 +1,25 @@
+# Reduce build context size for all Docker builds
+.git
+.idea
+.vscode
+**/.classpath
+**/.project
+**/.settings
+
+# Build outputs / caches
+**/target
+**/bin
+**/dist
+**/.gradle
+**/.mvn/wrapper/maven-wrapper.jar
+**/node_modules
+
+# OS/editor noise
+**/*.log
+**/.DS_Store
+**/Thumbs.db
+
+# Secrets
+.env
+.env.*
+

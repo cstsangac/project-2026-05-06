@@ -29,6 +29,11 @@ Start everything:
 docker compose up --build
 ```
 
+Stop everything (and delete DB/Kafka data volumes if you add any later):
+```powershell
+docker compose down
+```
+
 Services:
 - `user-wallet-service`: `http://localhost:8080`
 - `notification-service-go`: `http://localhost:8090`
@@ -122,5 +127,23 @@ There is an **opt-in** Testcontainers smoke test (Postgres) + Embedded Kafka. En
 ```powershell
 $env:RUN_TESTCONTAINERS = \"true\"
 mvn test
+```
+
+## Keeping Docker disk usage small (Windows)
+
+Docker disk “ballooning” is usually **not the Dockerfile**, but accumulated **images / build cache / stopped containers / volumes**
+inside Docker Desktop’s WSL disk.
+
+This repo includes `.dockerignore` files to keep build contexts small. To reclaim space when you’re done:
+
+```powershell
+# Remove stopped containers for this stack
+docker compose down
+
+# Remove unused build cache (often the biggest)
+docker builder prune -f
+
+# Remove unused images/containers/networks (safe-ish; affects other projects too)
+docker system prune -f
 ```
 
